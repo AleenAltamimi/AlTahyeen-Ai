@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "FinTech AI Predictor"
+version = "1.0.0"
+id = "artifacts/fintech-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22498
+
+[services.development]
+run = "pnpm --filter @workspace/fintech-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/fintech-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/fintech-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22498"
+BASE_PATH = "/"

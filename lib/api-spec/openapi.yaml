@@ -1,0 +1,450 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: FinTech AI Predictor API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: predictions
+    description: AI prediction operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /predictions:
+    get:
+      operationId: listPredictions
+      tags: [predictions]
+      summary: List all prediction history
+      description: Returns all previous prediction runs for this session
+      responses:
+        "200":
+          description: List of predictions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PredictionSummary"
+
+  /predictions/{id}:
+    get:
+      operationId: getPrediction
+      tags: [predictions]
+      summary: Get a prediction result by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Full prediction result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictionResult"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /predictions/manual:
+    post:
+      operationId: predictManual
+      tags: [predictions]
+      summary: Run AI prediction from manual questionnaire data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualInput"
+      responses:
+        "200":
+          description: Prediction result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictionResult"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /predictions/csv:
+    post:
+      operationId: predictCsv
+      tags: [predictions]
+      summary: Run AI prediction from uploaded CSV file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/CsvUpload"
+      responses:
+        "200":
+          description: Prediction result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictionResult"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    CsvUpload:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+        - file
+
+    ManualInput:
+      type: object
+      required:
+        - transactionAmount
+        - transactionDate
+        - merchantCategory
+        - paymentMethod
+        - monthlyIncome
+        - monthlyBudget
+        - monthlySavingsGoal
+        - averageMonthlySpending
+        - numberOfMonthlyTransactions
+        - averageTransactionAmount
+      properties:
+        # Transaction Details
+        transactionAmount:
+          type: number
+          description: Amount of the transaction
+        transactionDate:
+          type: string
+          description: Date of transaction (ISO format)
+        transactionTime:
+          type: ["string", "null"]
+          description: Time of transaction (HH:MM)
+        merchantName:
+          type: ["string", "null"]
+          description: Name of the merchant
+        merchantCategory:
+          type: string
+          description: Category of the merchant (e.g. groceries, dining)
+        paymentMethod:
+          type: string
+          description: Payment method used (e.g. credit card, debit, cash)
+        currency:
+          type: ["string", "null"]
+          description: Currency code (e.g. USD, SAR)
+        transactionLocation:
+          type: ["string", "null"]
+          description: Location of the transaction
+        deviceUsed:
+          type: ["string", "null"]
+          description: Device used for transaction (e.g. mobile, desktop)
+        isOnline:
+          type: ["boolean", "null"]
+          description: Whether the transaction was online
+        # Financial Information
+        monthlyIncome:
+          type: number
+          description: Monthly income
+        monthlyBudget:
+          type: number
+          description: Monthly spending budget
+        monthlySavingsGoal:
+          type: number
+          description: Monthly savings goal amount
+        currentBalance:
+          type: ["number", "null"]
+          description: Current account balance (optional)
+        averageMonthlySpending:
+          type: number
+          description: Average monthly spending amount
+        # Behavior Information
+        numberOfMonthlyTransactions:
+          type: integer
+          description: Number of transactions per month
+        averageTransactionAmount:
+          type: number
+          description: Average transaction amount
+        largestPurchase:
+          type: ["number", "null"]
+          description: Largest single purchase amount
+        shoppingFrequency:
+          type: ["string", "null"]
+          description: Shopping frequency (daily, weekly, monthly)
+        preferredPaymentMethod:
+          type: ["string", "null"]
+          description: Preferred payment method
+        # Overspending model features
+        financialScenario:
+          type: ["string", "null"]
+          description: "Economic scenario: inflation | stable | recession | growth"
+        incomeType:
+          type: ["string", "null"]
+          description: "Income type: Salary | Freelance | Business | Investment"
+        cashFlowStatus:
+          type: ["string", "null"]
+          description: "Cash flow: Positive | Negative | Neutral"
+        financialStressLevel:
+          type: ["string", "null"]
+          description: "Stress level: Low | Medium | High"
+        creditScore:
+          type: ["number", "null"]
+          description: Credit score (300-850)
+        debtToIncomeRatio:
+          type: ["number", "null"]
+          description: Debt-to-income ratio (0-1)
+        loanPayment:
+          type: ["number", "null"]
+          description: Monthly loan payment
+        investmentAmount:
+          type: ["number", "null"]
+          description: Monthly investment amount
+        subscriptionServices:
+          type: ["integer", "null"]
+          description: Number of active subscription services
+        emergencyFund:
+          type: ["number", "null"]
+          description: Emergency fund balance
+        discretionarySpending:
+          type: ["number", "null"]
+          description: Monthly discretionary spending
+        essentialSpending:
+          type: ["number", "null"]
+          description: Monthly essential spending
+        rentOrMortgage:
+          type: ["number", "null"]
+          description: Monthly rent or mortgage payment
+        actualSavings:
+          type: ["number", "null"]
+          description: Actual savings this month
+
+    SuspiciousTransaction:
+      type: object
+      required:
+        - id
+        - amount
+        - merchant
+        - riskLevel
+        - reason
+      properties:
+        id:
+          type: string
+        amount:
+          type: number
+        merchant:
+          type: string
+        riskLevel:
+          type: string
+          description: "critical | high | medium | low"
+        reason:
+          type: string
+        date:
+          type: ["string", "null"]
+
+    SpendingCategory:
+      type: object
+      required:
+        - category
+        - amount
+        - percentage
+        - isHighRisk
+      properties:
+        category:
+          type: string
+        amount:
+          type: number
+        percentage:
+          type: number
+        isHighRisk:
+          type: boolean
+
+    SpendingTrendPoint:
+      type: object
+      required:
+        - period
+        - amount
+      properties:
+        period:
+          type: string
+        amount:
+          type: number
+        budget:
+          type: ["number", "null"]
+
+    FraudDetectionResult:
+      type: object
+      required:
+        - fraudProbability
+        - suspiciousTransactionCount
+        - overallRisk
+        - suspiciousTransactions
+        - confidenceScore
+      properties:
+        fraudProbability:
+          type: number
+          description: Fraud probability score 0-1
+        suspiciousTransactionCount:
+          type: integer
+        overallRisk:
+          type: string
+          description: "critical | high | medium | low"
+        suspiciousTransactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SuspiciousTransaction"
+        confidenceScore:
+          type: number
+          description: Model confidence score 0-1
+        riskBreakdown:
+          type: object
+          properties:
+            critical:
+              type: integer
+            high:
+              type: integer
+            medium:
+              type: integer
+            low:
+              type: integer
+          required: [critical, high, medium, low]
+
+    OverspendingResult:
+      type: object
+      required:
+        - overspendingPredicted
+        - budgetRisk
+        - spendingCategories
+        - highRiskCategories
+        - recommendations
+        - spendingTrends
+      properties:
+        overspendingPredicted:
+          type: boolean
+        budgetRisk:
+          type: string
+          description: "critical | high | medium | low"
+        projectedOverspend:
+          type: ["number", "null"]
+          description: Projected amount over budget
+        daysUntilBudgetExceeded:
+          type: ["integer", "null"]
+        spendingTrends:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpendingTrendPoint"
+        spendingCategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpendingCategory"
+        highRiskCategories:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    PredictionResult:
+      type: object
+      required:
+        - id
+        - createdAt
+        - inputMethod
+        - fraud
+        - overspending
+      properties:
+        id:
+          type: string
+        createdAt:
+          type: string
+          description: ISO timestamp
+        inputMethod:
+          type: string
+          description: "csv | manual"
+        rowCount:
+          type: ["integer", "null"]
+          description: Number of rows if CSV upload
+        detectedColumns:
+          type: array
+          items:
+            type: string
+        fraud:
+          $ref: "#/components/schemas/FraudDetectionResult"
+        overspending:
+          $ref: "#/components/schemas/OverspendingResult"
+
+    PredictionSummary:
+      type: object
+      required:
+        - id
+        - createdAt
+        - inputMethod
+        - overallFraudRisk
+        - overspendingPredicted
+      properties:
+        id:
+          type: string
+        createdAt:
+          type: string
+        inputMethod:
+          type: string
+          description: "csv | manual"
+        rowCount:
+          type: ["integer", "null"]
+        overallFraudRisk:
+          type: string
+        overspendingPredicted:
+          type: boolean
+        fraudProbability:
+          type: number
+        budgetRisk:
+          type: string

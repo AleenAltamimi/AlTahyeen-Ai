@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Python virtual environment
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Trained ML model cache (auto-generated on startup from CSVs)
+artifacts/ml-service/models/*.pkl
+
+# Large training datasets (kept in attached_assets locally, not needed in repo)
+attached_assets/Fraud_detection_*.csv
+
+# Build outputs
+dist/
+build/
+.turbo/
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Replit
+.replit.nix
+.cache/
+
+# Editor
+.vscode/
+.idea/
